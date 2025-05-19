@@ -31,6 +31,15 @@ dependencies:
   flutter_internet_speed_test: ^1.5.0
   geolocator: ^12.0.0
   http: ^1.3.0
+  file_picker: ^5.3.3
+  syncfusion_flutter_pdfviewer: ^23.1.39
+  dropdown_button2: ^2.3.9
+  contained_tab_bar_view_with_custom_page_navigator: ^0.1.3
+  url_launcher: ^6.3.1
+  phosphor_flutter: ^2.1.0
+  
+  
+
 
 dev_dependencies:
   flutter_test:
@@ -52,6 +61,10 @@ flutter:
   - lib/assets/images/premiere/
   - lib/assets/images/max/
   - lib/assets/images/deezer/
+  - lib/assets/images/tv_plans/
+  - lib/assets/images/topHD/
+  - lib/assets/images/startHD/
+  - lib/assets/images/premiumHD/
   
   fonts:
     - family: EutoStile
@@ -67,6 +80,8 @@ flutter:
           weight: 700
         - asset: lib/assets/fonts/petrov/PetrovSans-Regular.ttf
           weight: 200         
+        - asset: lib\assets\fonts\CalSans-Regular.ttf
+          weight: 200
 
       
         

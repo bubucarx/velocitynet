@@ -12,301 +12,298 @@ class Globoplay extends StatefulWidget {
   State<Globoplay> createState() => _GloboplayState();
 }
 
-class _GloboplayState extends State<Globoplay>
-    with AutomaticKeepAliveClientMixin {
+class _GloboplayState extends State<Globoplay> with AutomaticKeepAliveClientMixin {
   @override
-  bool get wantKeepAlive => true; // Isso mantém o estado do widget.
+  bool get wantKeepAlive => true;
 
   @override
   Widget build(BuildContext context) {
+    final isMobile = MediaQuery.of(context).size.width < 600;
+    
     return ScreenUtilInit(
-        designSize: Size(1920, 1080),
-        splitScreenMode: true,
-        minTextAdapt: true,
-        builder: (context, child) {
-          return Container(
+      designSize: isMobile ? const Size(360, 800) : const Size(1920, 1080),
+      splitScreenMode: true,
+      minTextAdapt: true,
+      builder: (context, child) {
+        return SingleChildScrollView(
+          child: Container(
+            padding: EdgeInsets.symmetric(vertical: isMobile ? 40.sp : 60.sp),
             child: Column(
               children: [
+                // Logo Globoplay
                 Container(
-                  width: 645.sp,
-                  height: 140.sp,
+                  width: isMobile ? 300.sp : 645.sp,
+                  height: isMobile ? 65.sp : 140.sp,
                   decoration: BoxDecoration(
                     image: DecorationImage(
-                      image: AssetImage(
-                          "lib/assets/images/globoplay/Globoplay.jpg"),
-                      fit: BoxFit.fill,
+                      image: AssetImage("lib/assets/images/globoplay/Globoplay.jpg"),
+                      fit: BoxFit.contain,
                     ),
                   ),
                 ),
+                
+                SizedBox(height: isMobile ? 30.sp : 60.sp),
+                
+                // Descrição
                 SizedBox(
-                  height: 60.sp,
-                ),
-                SizedBox(
-                  width: 1040.sp,
+                  width: isMobile ? 320.sp : 1040.sp,
                   child: Text(
                     'Globoplay é a plataforma digital de vídeos da Globo. No Globoplay, você encontra séries originais e exclusivas, filmes, documentários, conteúdos infantis, novelas e programas além do sinal ao vivo da TV Globo e do Canal Futura. O acesso é pela internet e pode ser realizado por computador, celular, tablet, Smart TV, Apple TV, Android TV, Chromecast e Roku.',
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       color: Color(0xFF13294E),
-                      fontSize: 20.sp,
+                      fontSize: isMobile ? 14.sp : 20.sp,
                       fontFamily: 'EutoStile',
                       fontWeight: FontWeight.w600,
-                      height: 0.95,
+                      height: 1.2,
                     ),
                   ),
                 ),
-                Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 315.sp),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      _container1(
-                        WidthContainer: 241.32.sp,
-                        PositionedWidth: 69.23.sp,
-                        FotoFilme: 'lib/assets/images/globoplay/ojogo.jpg',
-                        NomeFilme: 'O JOGO QUE\nMUDOU A HISTÓRIA',
-                        Numero: '1',
-                        delay: 0,
-                      ),
-                      _container1(
-                        NomeFilme: 'OS PARÇAS',
-                        FotoFilme: 'lib/assets/images/globoplay/osparcas.jpg',
-                        Numero: '2',
-                        PositionedWidth: 122.55.sp,
-                        WidthContainer: 295.sp,
-                        delay: 0500,
-                      ),
-                      _container1(
-                        NomeFilme: 'THE GOOD\nDOCTOR',
-                        FotoFilme:
-                            'lib/assets/images/globoplay/thegooddoctor.jpg',
-                        Numero: '3',
-                        PositionedWidth: 122.55.sp,
-                        WidthContainer: 295.sp,
-                        delay: 1000,
-                      ),
-                      _container1(
-                        NomeFilme: 'ARCANJO\nRENEGADO',
-                        FotoFilme:
-                            'lib/assets/images/globoplay/arcanjorenegado.jpg',
-                        Numero: '4',
-                        PositionedWidth: 142.sp,
-                        WidthContainer: 315.sp,
-                        delay: 1500,
-                      )
-                    ],
-                  ),
-                )
+                
+                SizedBox(height: isMobile ? 30.sp : 60.sp),
+                
+                // Lista de filmes/séries
+                isMobile ? _buildMobileMovieList() : _buildDesktopMovieList(),
               ],
             ),
-          );
-        });
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildDesktopMovieList() {
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      padding: EdgeInsets.symmetric(horizontal: 20.sp),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          SizedBox(width: 20.sp),
+          _MovieCard(
+            widthContainer: 280.sp,
+            positionedLeft: 70.sp,
+            imagePath: 'lib/assets/images/globoplay/ojogo.jpg',
+            title: 'O JOGO QUE\nMUDOU A HISTÓRIA',
+            number: '1',
+            delay: 0,
+          ),
+          SizedBox(width: 40.sp),
+          _MovieCard(
+            title: 'OS PARÇAS',
+            imagePath: 'lib/assets/images/globoplay/osparcas.jpg',
+            number: '2',
+            positionedLeft: 70.sp,
+            widthContainer: 280.sp,
+            delay: 200,
+          ),
+          SizedBox(width: 40.sp),
+          _MovieCard(
+            title: 'THE GOOD\nDOCTOR',
+            imagePath: 'lib/assets/images/globoplay/thegooddoctor.jpg',
+            number: '3',
+            positionedLeft: 70.sp,
+            widthContainer: 280.sp,
+            delay: 400,
+          ),
+          SizedBox(width: 40.sp),
+          _MovieCard(
+            title: 'ARCANJO\nRENEGADO',
+            imagePath: 'lib/assets/images/globoplay/arcanjorenegado.jpg',
+            number: '4',
+            positionedLeft: 70.sp,
+            widthContainer: 280.sp,
+            delay: 600,
+          ),
+          SizedBox(width: 20.sp),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMobileMovieList() {
+    return Column(
+      children: [
+        // Primeiro card
+        _MovieCard(
+          widthContainer: 300.sp,
+          positionedLeft: 80.sp,
+          imagePath: 'lib/assets/images/globoplay/ojogo.jpg',
+          title: 'O JOGO QUE\nMUDOU A HISTÓRIA',
+          number: '1',
+          delay: 0,
+          isMobile: true,
+        ),
+        
+        SizedBox(height: 40.sp),
+        
+        // Segundo card
+        _MovieCard(
+          title: 'OS PARÇAS',
+          imagePath: 'lib/assets/images/globoplay/osparcas.jpg',
+          number: '2',
+          positionedLeft: 80.sp,
+          widthContainer: 300.sp,
+          delay: 200,
+          isMobile: true,
+        ),
+      ],
+    );
   }
 }
 
-Widget _container2(
-    {required String NomeFilme,
-    required String FotoFilme,
-    required String Numero,
-    required double PositionedWidth,
-    required double WidthContainer}) {
-  return Container(
-    width: WidthContainer,
-    height: 445.sp,
-    child: Stack(
-      children: [
-        Positioned(
-          left: 0.sp,
-          top: 0.sp,
-          child: GradientText(
-            gradientDirection: GradientDirection.ttb,
-            colors: [Color(0xffFE8E04), Color(0xffFE012F)],
-            Numero,
-            style: GoogleFonts.poppins(
-              fontSize: 295.sp,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-        ),
-        Positioned(
-          left: PositionedWidth,
-          top: 121.21.sp,
-          child: Column(
-            children: [
-              Container(
-                width: 170.sp,
-                height: 240.sp,
-                decoration: ShapeDecoration(
-                  image: DecorationImage(
-                    image: AssetImage(FotoFilme),
-                    fit: BoxFit.fill,
-                  ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10.sp),
-                  ),
-                ),
-              ),
-              SizedBox(
-                height: 30.sp,
-              ),
-              Text(
-                NomeFilme,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: Colors.black,
-                  fontSize: 20.sp,
-                  fontFamily: 'EutoStile',
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
-    ),
-  );
-}
-
-class _container1 extends StatefulWidget {
-  final String NomeFilme;
-  final String FotoFilme;
-  final String Numero;
-  final double PositionedWidth;
-  final double WidthContainer;
+class _MovieCard extends StatefulWidget {
+  final String title;
+  final String imagePath;
+  final String number;
+  final double positionedLeft;
+  final double widthContainer;
   final int delay;
+  final bool isMobile;
 
-  const _container1({
+  const _MovieCard({
     Key? key,
-    required this.NomeFilme,
-    required this.FotoFilme,
-    required this.Numero,
-    required this.PositionedWidth,
-    required this.WidthContainer,
+    required this.title,
+    required this.imagePath,
+    required this.number,
+    required this.positionedLeft,
+    required this.widthContainer,
     required this.delay,
+    this.isMobile = false,
   }) : super(key: key);
 
   @override
-  _Container1State createState() => _Container1State();
+  _MovieCardState createState() => _MovieCardState();
 }
 
-class _Container1State extends State<_container1>
-    with TickerProviderStateMixin {
+class _MovieCardState extends State<_MovieCard> with TickerProviderStateMixin {
   late AnimationController _controller;
-  bool _hasFlipped1 = false;
+  bool _hasAnimated = false;
 
   @override
   void initState() {
     super.initState();
-    // Inicializa o controller de animação
     _controller = AnimationController(
-        vsync: this, duration: Duration(milliseconds: 10000));
+      vsync: this,
+      duration: Duration(milliseconds: 1000),
+    );
   }
 
   @override
   void dispose() {
-    _controller.dispose(); // Libera o controller de animação
+    _controller.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    final imageWidth = widget.isMobile ? 180.sp : 170.sp; // Aumentado para mobile
+    final imageHeight = imageWidth * 1.5;
+    final fontSize = widget.isMobile ? 18.sp : 20.sp; // Aumentado para mobile
+    final numberSize = widget.isMobile ? 150.sp : 200.sp; // Aumentado para mobile
+
     return VisibilityDetector(
-      key: Key(widget.Numero),
+      key: Key(widget.number),
       onVisibilityChanged: (visibilityInfo) {
-        if (visibilityInfo.visibleFraction > 0.2) {
+        if (visibilityInfo.visibleFraction > 0.2 && !_hasAnimated) {
           Future.delayed(Duration(milliseconds: widget.delay), () {
-            if (!_hasFlipped1) {
-              Future.delayed(Duration(milliseconds: 200), () {
-                _controller.forward();
-                setState(() {
-                  _hasFlipped1 = true; // Marcar como já flipado
-                });
-              });
-            }
+            _controller.forward();
+            setState(() => _hasAnimated = true);
           });
         }
       },
-      child: Container(
-        width: widget.WidthContainer,
-        height: 445.sp,
+      child: SizedBox(
+        width: widget.widthContainer,
+        height: widget.isMobile ? 350.sp : 400.sp, // Aumentado para mobile
         child: Stack(
+          clipBehavior: Clip.none,
           children: [
+            // Número gradiente
             Positioned(
-              left: 0.sp,
-              top: 0.sp,
-              child: GradientText(
-                gradientDirection: GradientDirection.ttb,
-                colors: [Color(0xffFE8E04), Color(0xffFE012F)],
-                widget.Numero,
-                style: GoogleFonts.poppins(
-                  fontSize: 295.sp,
-                  fontWeight: FontWeight.w700,
-                ),
-              )
-                  .animate(
-                    controller: _controller,
-                    autoPlay: false,
-                    onPlay: (controller) {
-                      _controller;
-                    },
-                  )
-                  .fadeIn(
-                    begin: 0,
-                    duration: Duration(milliseconds: 1000),
-                  )
-                  .moveX(
-                    begin: 60,
-                    end: 0,
-                    duration: Duration(milliseconds: 1000),
-                  )
-                  .moveY(
-                    begin: 30,
-                    end: 0,
-                    duration: Duration(milliseconds: 1000),
+              left: 0,
+              top: 0,
+              child: SizedBox(
+                width: widget.widthContainer,
+                child: GradientText(
+                  widget.number,
+                  gradientDirection: GradientDirection.ttb,
+                  colors: [Color(0xffFE8E04), Color(0xffFE012F)],
+                  style: GoogleFonts.poppins(
+                    fontSize: numberSize,
+                    fontWeight: FontWeight.w700,
+                    height: 0.8,
                   ),
+                )
+                    .animate(
+                      controller: _controller,
+                      autoPlay: false,
+                    )
+                    .fadeIn(
+                      begin: 0,
+                      duration: Duration(milliseconds: 800),
+                    )
+                    .moveX(
+                      begin: 60,
+                      end: 0,
+                      duration: Duration(milliseconds: 800),
+                    ),
+              ),
             ),
+            
+            // Imagem e título
             Positioned(
-              left: widget.PositionedWidth,
-              top: 121.21.sp,
+              left: widget.positionedLeft,
+              top: widget.isMobile ? 90.sp : 100.sp, // Ajustado para mobile
               child: Column(
+                mainAxisSize: MainAxisSize.min,
                 children: [
+                  // Poster do filme/série
                   Container(
-                    width: 170.sp,
-                    height: 240.sp,
-                    decoration: ShapeDecoration(
-                      image: DecorationImage(
-                        image: AssetImage(widget.FotoFilme),
-                        fit: BoxFit.fill,
-                      ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10.sp),
+                    width: imageWidth,
+                    height: imageHeight,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(10.sp),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.3),
+                          blurRadius: 10,
+                          offset: Offset(0, 4),
+                        )
+                      ],
+                    ),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(10.sp),
+                      child: Image.asset(
+                        widget.imagePath,
+                        fit: BoxFit.cover,
                       ),
                     ),
                   ),
+                  
+                  SizedBox(height: widget.isMobile ? 20.sp : 20.sp),
+                  
+                  // Título
                   SizedBox(
-                    height: 30.sp,
-                  ),
-                  Text(
-                    widget.NomeFilme,
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: Colors.black,
-                      fontSize: 20.sp,
-                      fontFamily: 'EutoStile',
-                      fontWeight: FontWeight.w600,
+                    width: imageWidth,
+                    child: Text(
+                      widget.title,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: Colors.black,
+                        fontSize: fontSize,
+                        fontFamily: 'EutoStile',
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   )
                       .animate(
                         controller: _controller,
                         autoPlay: false,
-                        onPlay: (controller) {
-                          _controller;
-                        },
                       )
                       .fadeIn(
                         begin: 0,
-                        duration: Duration(milliseconds: 1000),
-                      )
+                        duration: Duration(milliseconds: 800),
+                      ),
                 ],
               ),
             ),

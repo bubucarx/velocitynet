@@ -6,15 +6,15 @@ import 'package:provider/provider.dart';
 import 'package:velocitynet/providerIndex.dart';
 
 class _TextHeader extends StatefulWidget {
-  final String texto;
+  final String text;
   final double width;
-  final int index; // Índice do item
-  final bool isSelected; // Se o item está selecionado
-  final VoidCallback onTap; // Callback para o toque
+  final int index;
+  final bool isSelected;
+  final VoidCallback onTap;
 
   const _TextHeader({
     super.key,
-    required this.texto,
+    required this.text,
     required this.width,
     required this.index,
     required this.isSelected,
@@ -26,73 +26,55 @@ class _TextHeader extends StatefulWidget {
 }
 
 class __TextHeaderState extends State<_TextHeader> {
-  double _fontSize = 25.0.sp; // Tamanho da fonte inicial
-  FontWeight _fontWeith = FontWeight.w200; // Fonte inicial
-  double _containerWidth = 0.0.sp; // Largura do container, inicialmente 0
+  double _fontSize = 25.0;
+  FontWeight _fontWeight = FontWeight.w100;
+  double _containerWidth = 0.0;
 
-  // Controlando se o item está selecionado
   @override
   Widget build(BuildContext context) {
     return MouseRegion(
       onEnter: (_) {
-        setState(() {
-          // O item não está selecionado, então mudamos para w700
-          if (!widget.isSelected) {
-            _fontWeith = FontWeight.w700;
+        if (!widget.isSelected) {
+          setState(() {
+            _fontWeight = FontWeight.w700;
             _containerWidth = widget.width;
-          }
-        });
+          });
+        }
       },
       onExit: (_) {
-        setState(() {
-          // O item não está selecionado, então voltamos para w200
-          if (!widget.isSelected) {
-            _fontWeith = FontWeight.w200;
-            _containerWidth = 0.0.sp;
-          }
-        });
+        if (!widget.isSelected) {
+          setState(() {
+            _fontWeight = FontWeight.w200;
+            _containerWidth = 0.0;
+          });
+        }
       },
       child: GestureDetector(
-        onTap: () {
-          widget.onTap();
-          setState(() {
-            // Quando o item for tocado, ele se torna selecionado
-            // Mudamos para w700 para o item selecionado
-            _fontWeith = FontWeight.w700;
-          });
-        },
+        onTap: widget.onTap,
         child: Container(
           width: widget.width,
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Text(
-                widget.texto,
+                widget.text,
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  color: widget.isSelected
-                      ? Colors.white
-                      : Colors
-                          .white, // Cor igual, mas o comportamento depende do selected
-                  fontSize: widget.isSelected
-                      ? 25.0.sp
-                      : _fontSize.sp, // Tamanho maior quando selecionado
+                  color: Colors.white,
+                  fontSize: widget.isSelected ? 25.0.sp : _fontSize.sp,
                   fontFamily: 'PetrovSans',
-                  fontWeight: widget.isSelected
-                      ? FontWeight.w700 // Peso maior quando selecionado
-                      : _fontWeith, // Peso baseado no mouse e na seleção
+                  fontWeight: widget.isSelected ? FontWeight.w500 : _fontWeight,
                 ),
               ),
               AnimatedContainer(
-                duration: Duration(milliseconds: 300), // Tempo de animação
+                duration: const Duration(milliseconds: 300),
                 decoration: BoxDecoration(
-                    color: Colors.white, // Cor da barra
-                    borderRadius: BorderRadius.circular(10.sp)),
-                curve: Curves.easeOut, // Tipo de animação (suave)
-                height: 3.sp, // A altura da barra
-                width: widget.isSelected
-                    ? widget.width.sp
-                    : 0.0.sp, // Largura será animada
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(10.r),
+                ),
+                curve: Curves.easeOut,
+                height: 3.h,
+                width: widget.isSelected ? widget.width.w : _containerWidth.w,
               ),
             ],
           ),
@@ -102,133 +84,263 @@ class __TextHeaderState extends State<_TextHeader> {
   }
 }
 
-class Header extends StatefulWidget {
-  final double opacidade;
-  const Header({super.key, required this.opacidade});
-
-  @override
-  State<Header> createState() => _HeaderState();
-}
-
-class _HeaderState extends State<Header> {
-  int _selectedIndex = -1; // Nenhum item selecionado por padrão
-
-  // Função chamada ao tocar em um item para alternar a seleção
-  void _onItemTapped(int index) {
-    setState(() {
-      // Alterna a seleção entre os itens
-      _selectedIndex = (_selectedIndex == index) ? -1 : index;
-    });
-  }
+class Header extends StatelessWidget {
+  final double opacity;
+  const Header({super.key, required this.opacity});
 
   @override
   Widget build(BuildContext context) {
-    return ScreenUtilInit(
-        minTextAdapt: true,
-        splitScreenMode: true,
-        designSize: Size(1920, 1080),
-        builder: (context, child) {
-          return Stack(
-            children: [
-              Blur(
-                blurColor: Color(0xff13294E),
-                colorOpacity: widget.opacidade,
-                blur: 10,
-                borderRadius: BorderRadius.circular(10.sp),
-                child: Container(
-                  width: 1400.sp,
-                  height: 95.sp,
-                  decoration: ShapeDecoration(
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10.sp),
-                    ),
-                  ),
-                ),
-              ),
-              Container(
-                width: 1400.sp,
-                height: 95.sp,
-                decoration: ShapeDecoration(
-                  color: Colors.transparent,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10.sp),
-                  ),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    SvgPicture.asset(
-                      "lib/assets/images/LOGOVETORIZADA.svg",
-                      fit: BoxFit.cover,
-                      width: 254.sp,
-                      height: 50.sp,
-                    ),
-                    Container(
-                      // color: Colors.red,
-                      // width: 700.sp,
-                      child: Row(
-                        children: List.generate(6, (index) {
-                          return Padding(
-                            padding: EdgeInsets.symmetric(horizontal: 8.sp),
-                            child: _TextHeader(
-                              texto: [
-                                'Início',
-                                'Combos',
-                                'Aplciativos',
-                                'Oferta',
-                                'TV',
-                                'Contatos'
-                              ][index],
-                              width: [
-                                70.sp,
-                                100.sp,
-                                130.sp,
-                                80.sp,
-                                50.sp,
-                                110.sp
-                              ][index],
-                              index: index, // Passa o índice de cada item
-                              isSelected: Provider.of<IndexProvider>(context)
-                                      .selectedIndex ==
-                                  index, // Verifica se está selecionado
-                              onTap: () {
-                                // Atualiza o índice selecionado usando o Provider
-                                Provider.of<IndexProvider>(context,
-                                        listen: false)
-                                    .setSelectedIndex(index);
-                              },
-                            ),
-                          );
-                        }),
-                      ),
-                    ),
-                    Container(
-                      width: 300.sp,
-                      height: 35.sp,
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isMobile = constraints.maxWidth < 1200;
+        final designSize = isMobile ? const Size(400, 860) : const Size(1920, 1080);
+
+        return ScreenUtilInit(
+          designSize: designSize,
+          minTextAdapt: true,
+          splitScreenMode: true,
+          builder: (context, child) {
+            return Stack(
+              children: [
+                if (!isMobile)
+                  Blur(
+                    blurColor: Colors.blueAccent,
+                    colorOpacity: opacity,
+                    blur: 0,
+                    borderRadius: BorderRadius.circular(10.r),
+                    child: Container(
+                      width: isMobile ? double.infinity : 100.w,
+                      height: isMobile ? 70.h : 95.h,
                       decoration: ShapeDecoration(
-                        color: Color.fromARGB(255, 255, 255, 255),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(5.sp),
+                          borderRadius: BorderRadius.circular(10.r),
                         ),
                       ),
-                      child: Center(
+                    ),
+                  ),
+
+                Padding(
+                  padding: const EdgeInsets.only(left: 40, right: 40, top: 15),
+                  child: Container(
+                    width: isMobile ? double.infinity : 2000.w,
+                    height: isMobile ? 70.h : 95.h,
+                    decoration: ShapeDecoration(
+                      gradient: const LinearGradient(colors: [
+                        Color(0xFF13294E),
+                        Color.fromARGB(255, 25, 77, 167)
+                      ]),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10.r),
+                      ),
+                    ),
+                    child: isMobile
+                        ? _buildMobileHeader(context)
+                        : _buildDesktopHeader(context),
+                  ),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildDesktopHeader(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      children: [
+        SvgPicture.asset(
+          "lib/assets/images/LOGOVETORIZADA.svg",
+          fit: BoxFit.cover,
+          width: 254.w,
+          height: 50.h,
+        ),
+
+        Container(
+          child: Row(
+            children: List.generate(6, (index) {
+              return Padding(
+                padding: EdgeInsets.symmetric(horizontal: 8.w),
+                child: _TextHeader(
+                  text: _getHeaderText(index),
+                  width: _getHeaderWidth(index),
+                  index: index,
+                  isSelected: Provider.of<IndexProvider>(context).selectedIndex == index,
+                  onTap: () {
+                    Provider.of<IndexProvider>(context, listen: false)
+                        .setSelectedIndex(index);
+                  },
+                ),
+              );
+            }),
+          ),
+        ),
+
+        Container(
+          width: 290.w,
+          height: 35.h,
+          decoration: ShapeDecoration(
+            color: Colors.white,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(5.r),
+            ),
+          ),
+          child: Center(
+            child: Text(
+              'CENTRAL DO CLIENTE',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: const Color(0xFF13294E),
+                fontSize: 18.sp,
+                fontFamily: 'PetrovSans',
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildMobileHeader(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Padding(
+          padding: EdgeInsets.only(left: 20.w),
+          child: SvgPicture.asset(
+            "lib/assets/images/LOGOVETORIZADA.svg",
+            fit: BoxFit.cover,
+            width: 150.w,
+            height: 30.h,
+          ),
+        ),
+
+        IconButton(
+          icon: Icon(Icons.menu, color: Colors.white, size: 30.sp),
+          onPressed: () {
+            _showCenteredMobileMenu(context);
+          },
+        ),
+      ],
+    );
+  }
+
+  void _showCenteredMobileMenu(BuildContext context) {
+    showDialog(
+      context: context,
+      barrierColor: Colors.black54, // Fundo semi-transparente
+      builder: (context) {
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          insetPadding: EdgeInsets.all(20.w),
+          child: Container(
+            width: double.infinity,
+            constraints: BoxConstraints(
+              maxWidth: 400.w, // Largura máxima do menu
+            ),
+            decoration: BoxDecoration(
+              color: const Color(0xFF13294E),
+              borderRadius: BorderRadius.circular(20.r),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.3),
+                  spreadRadius: 5,
+                  blurRadius: 10,
+                  offset: Offset(0, 3),
+                ),
+              ],
+            ),
+            padding: EdgeInsets.symmetric(vertical: 30.h, horizontal: 20.w),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Itens do menu
+                ...List.generate(6, (index) {
+                  return Padding(
+                    padding: EdgeInsets.symmetric(vertical: 8.h),
+                    child: InkWell(
+                      onTap: () {
+                        Provider.of<IndexProvider>(context, listen: false)
+                            .setSelectedIndex(index);
+                        Navigator.pop(context);
+                      },
+                      child: Container(
+                        width: double.infinity,
+                        padding: EdgeInsets.symmetric(vertical: 12.h),
                         child: Text(
-                          'CENTRAL DO CLIENTE',
+                          _getHeaderText(index),
                           textAlign: TextAlign.center,
                           style: TextStyle(
-                            color: Color(0xFF13294E),
-                            fontSize: 18.sp,
+                            color: Colors.white,
+                            fontSize: 20.sp,
                             fontFamily: 'PetrovSans',
-                            fontWeight: FontWeight.w700,
+                            fontWeight: Provider.of<IndexProvider>(context).selectedIndex == index
+                                ? FontWeight.w700
+                                : FontWeight.w400,
                           ),
                         ),
                       ),
                     ),
-                  ],
+                  );
+                }),
+                
+                // Botão Central do Cliente
+                Padding(
+                  padding: EdgeInsets.only(top: 20.h),
+                  child: InkWell(
+                    onTap: () {
+                      Navigator.pop(context);
+                      // Adicione aqui a ação para a Central do Cliente
+                    },
+                    child: Container(
+                      width: double.infinity,
+                      padding: EdgeInsets.symmetric(vertical: 12.h),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(8.r),
+                      ),
+                      child: Text(
+                        'CENTRAL DO CLIENTE',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: const Color(0xFF13294E),
+                          fontSize: 18.sp,
+                          fontFamily: 'PetrovSans',
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                  ),
                 ),
-              ),
-            ],
-          );
-        });
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  String _getHeaderText(int index) {
+    return [
+      'Início',
+      'Combos',
+      'TV',
+      'Contatos',
+      'Trabalhe Conosco',
+      'Teste de Velocidade'
+    ][index];
+  }
+
+  double _getHeaderWidth(int index) {
+    return [
+      70,
+      100,
+      50,
+      110,
+      120,
+      130
+    ][index].toDouble();
   }
 }
