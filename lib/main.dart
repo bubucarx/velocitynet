@@ -29,7 +29,7 @@ class MyApp extends StatelessWidget {
         },
       ),
       debugShowCheckedModeBanner: false,
-      title: 'Flutter Demo',
+      title: 'VelocityNet - Telecom',
       theme: ThemeData(
         // This is the theme of your application.
         //

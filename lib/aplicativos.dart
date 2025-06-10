@@ -97,13 +97,13 @@ class _AplicativosState extends State<Aplicativos>
 
   Widget _buildAppsGrid(bool isMobile) {
     final containerSize =
-        isMobile ? 100.w : 190.w; // Reduzi um pouco o tamanho para mobile
+        isMobile ? 100.w : 250.w; // Reduzi um pouco o tamanho para mobile
     final gridPadding = isMobile ? 5.w : 0.w; // Reduzi o padding entre os itens
 
     return Center(
       child: SizedBox(
         height: isMobile ? 500.h : 500.h, // Reduzi a altura para mobile
-        width: isMobile ? double.infinity : 700.w,
+        width: isMobile ? double.infinity : 900.w,
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center, // Alterado para center
           children: [

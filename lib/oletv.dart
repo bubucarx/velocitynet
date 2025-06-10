@@ -151,13 +151,12 @@ class _OletvState extends State<Oletv> {
                       ),
                     ],
                   ),
-                  SizedBox(height: isMobile ? 40 : 100),
+                  SizedBox(height: isMobile ? 1 : 90),
                 ],
               ),
             ),
 
-            // Restante do código permanece igual...
-            // Plans Section
+
             Padding(
               padding: EdgeInsets.symmetric(
                 horizontal: isMobile ? 16 : 0,
@@ -181,8 +180,8 @@ class _OletvState extends State<Oletv> {
                       borderRadius: BorderRadius.circular(15),
                     ),
                     padding: const EdgeInsets.all(8.0),
-                    width: isMobile ? double.infinity : 900,
-                    height: isMobile ? 1200 : 800,
+                    width: isMobile ? 350 : 650,
+                    height: isMobile ? 900 : 800,
                     child: ContainedTabBarView(
                       tabBarProperties: TabBarProperties(
                         labelColor: Colors.transparent,

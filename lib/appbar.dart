@@ -2,7 +2,9 @@ import 'package:blur/blur.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:velocitynet/providerIndex.dart';
 
 class _TextHeader extends StatefulWidget {
@@ -26,8 +28,8 @@ class _TextHeader extends StatefulWidget {
 }
 
 class __TextHeaderState extends State<_TextHeader> {
-  double _fontSize = 25.0;
-  FontWeight _fontWeight = FontWeight.w100;
+  double _fontSize = 23.0;
+  FontWeight _fontWeight = FontWeight.w300;
   double _containerWidth = 0.0;
 
   @override
@@ -59,10 +61,9 @@ class __TextHeaderState extends State<_TextHeader> {
               Text(
                 widget.text,
                 textAlign: TextAlign.center,
-                style: TextStyle(
+                style: GoogleFonts.poppins(
                   color: Colors.white,
                   fontSize: widget.isSelected ? 25.0.sp : _fontSize.sp,
-                  fontFamily: 'PetrovSans',
                   fontWeight: widget.isSelected ? FontWeight.w500 : _fontWeight,
                 ),
               ),
@@ -103,18 +104,12 @@ class Header extends StatelessWidget {
             return Stack(
               children: [
                 if (!isMobile)
-                  Blur(
-                    blurColor: Colors.blueAccent,
-                    colorOpacity: opacity,
-                    blur: 0,
-                    borderRadius: BorderRadius.circular(10.r),
-                    child: Container(
-                      width: isMobile ? double.infinity : 100.w,
-                      height: isMobile ? 70.h : 95.h,
-                      decoration: ShapeDecoration(
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10.r),
-                        ),
+                  Container(
+                    width: isMobile ? double.infinity : 100.w,
+                    height: isMobile ? 70.h : 95.h,
+                    decoration: ShapeDecoration(
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10.r),
                       ),
                     ),
                   ),
@@ -158,10 +153,11 @@ class Header extends StatelessWidget {
         ),
 
         Container(
+          height: 120,
           child: Row(
             children: List.generate(6, (index) {
               return Padding(
-                padding: EdgeInsets.symmetric(horizontal: 8.w),
+                padding: EdgeInsets.symmetric(horizontal: 15.w),
                 child: _TextHeader(
                   text: _getHeaderText(index),
                   width: _getHeaderWidth(index),
@@ -177,24 +173,29 @@ class Header extends StatelessWidget {
           ),
         ),
 
-        Container(
-          width: 290.w,
-          height: 35.h,
-          decoration: ShapeDecoration(
-            color: Colors.white,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(5.r),
+        InkWell(
+          onTap: () {
+            launch("https://sistema.velocitynet.com.br/central_assinante_web/login");
+          },
+          child: Container(
+            width: 290.w,
+            height: 35.h,
+            decoration: ShapeDecoration(
+              color: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(5.r),
+              ),
             ),
-          ),
-          child: Center(
-            child: Text(
-              'CENTRAL DO CLIENTE',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                color: const Color(0xFF13294E),
-                fontSize: 18.sp,
-                fontFamily: 'PetrovSans',
-                fontWeight: FontWeight.w700,
+            child: Center(
+              child: Text(
+                'CENTRAL DO CLIENTE',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: const Color(0xFF13294E),
+                  fontSize: 18.sp,
+                  fontFamily: 'PetrovSans',
+                  fontWeight: FontWeight.w700,
+                ),
               ),
             ),
           ),
@@ -335,12 +336,12 @@ class Header extends StatelessWidget {
 
   double _getHeaderWidth(int index) {
     return [
-      70,
-      100,
-      50,
-      110,
-      120,
-      130
+      80,
+      130,
+      80,
+      150,
+      150,
+      150
     ][index].toDouble();
   }
 }

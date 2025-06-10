@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_speedtest/flutter_speedtest.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
@@ -21,409 +20,221 @@ class _TestspeednetState extends State<Testspeednet> {
     pathResponseTime: '/ping',
   );
 
-  double _progressDownload = 0;
-  double _progressUpload = 0;
-  int _ping = 0;
-  int _jitter = 0;
-  bool _isTesting = false;
-  String? _isp;
-  String? _location;
-  String _status = "Pronto para testar";
+  double downloadSpeed = 0;
+  double uploadSpeed = 0;
+  int ping = 0;
+  int jitter = 0;
 
-  List<double> _downloadSpeeds = [];
-  List<double> _uploadSpeeds = [];
-  Timer? _updateTimer;
-
-  @override
-  void dispose() {
-    _updateTimer?.cancel();
-    super.dispose();
-  }
+  bool isTesting = false;
+  String status = "Toque para iniciar o teste";
+  String? isp;
+  String? location;
 
   @override
   void initState() {
     super.initState();
-    _fetchProviderAndLocation();
+    _getLocationInfo();
   }
 
-  Future<void> _fetchProviderAndLocation() async {
+  Future<void> _getLocationInfo() async {
     try {
-      final response = await http.get(Uri.parse('http://ip-api.com/json/'))
-          .timeout(const Duration(seconds: 5));
-      
-      if (mounted && response.statusCode == 200) {
-        final data = json.decode(response.body);
-        setState(() {
-          _isp = data['isp'] ?? 'Provedor indisponível';
-          _location = '${data['city']}, ${data['country']}';
-        });
-      }
-    } catch (e) {
-      if (mounted) {
-        setState(() {
-          _isp = 'Provedor indisponível';
-          _location = 'Localização indisponível';
-        });
-      }
+      final response = await http.get(Uri.parse('http://ip-api.com/json/'));
+      final data = json.decode(response.body);
+      setState(() {
+        isp = data['isp'];
+        location = "${data['city']}, ${data['country']}";
+      });
+    } catch (_) {
+      setState(() {
+        isp = 'Desconhecido';
+        location = 'Indisponível';
+      });
     }
   }
 
-  void _startSpeedTest() async {
-    if (_isTesting || !mounted) return;
-
+  void _startTest() async {
     setState(() {
-      _isTesting = true;
-      _progressDownload = 0;
-      _progressUpload = 0;
-      _ping = 0;
-      _jitter = 0;
-      _downloadSpeeds.clear();
-      _uploadSpeeds.clear();
-      _status = "Testando...";
-    });
-
-    _updateTimer = Timer.periodic(const Duration(milliseconds: 500), (timer) {
-      if (!_isTesting || !mounted) {
-        timer.cancel();
-        return;
-      }
-      setState(() {
-        _downloadSpeeds.add(_progressDownload);
-        _uploadSpeeds.add(_progressUpload);
-      });
+      isTesting = true;
+      status = "Iniciando teste...";
+      downloadSpeed = 0;
+      uploadSpeed = 0;
+      ping = 0;
+      jitter = 0;
     });
 
     try {
       await _speedtest.getDataspeedtest(
-        downloadOnProgress: (percent, transferRate) {
-          if (mounted) {
-            setState(() {
-              _progressDownload = transferRate;
-              _status = "Testando download... ${percent.toStringAsFixed(1)}%";
-            });
-          }
+        downloadOnProgress: (percent, rate) {
+          setState(() {
+            downloadSpeed = rate;
+            status = "Testando download...";
+          });
         },
-        uploadOnProgress: (percent, transferRate) {
-          if (mounted) {
-            setState(() {
-              _progressUpload = transferRate;
-              _status = "Testando upload... ${percent.toStringAsFixed(1)}%";
-            });
-          }
+        uploadOnProgress: (percent, rate) {
+          setState(() {
+            uploadSpeed = rate;
+            status = "Testando upload...";
+          });
         },
-        progressResponse: (responseTime, jitter) {
-          if (mounted) {
-            setState(() {
-              _ping = responseTime;
-              _jitter = jitter;
-            });
-          }
-        },
-        onError: (errorMessage) {
-          if (mounted) {
-            setState(() {
-              _status = "Erro: $errorMessage";
-            });
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('Erro: $errorMessage')),
-            );
-          }
+        progressResponse: (p, j) {
+          setState(() {
+            ping = p;
+            jitter = j;
+          });
         },
         onDone: () {
-          if (mounted) {
-            setState(() {
-              _status = "Teste concluído";
-              _isTesting = false;
-            });
-            _calculateAverages();
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Teste concluído com sucesso!')),
-            );
-          }
+          setState(() {
+            isTesting = false;
+            status = "Teste concluído";
+          });
+        },
+        onError: (err) {
+          setState(() {
+            status = "Erro: $err";
+            isTesting = false;
+          });
         },
       );
     } catch (e) {
-      if (mounted) {
-        setState(() {
-          _status = "Erro no teste";
-          _isTesting = false;
-        });
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Erro inesperado: $e')),
-        );
-      }
-    } finally {
-      _updateTimer?.cancel();
+      setState(() {
+        status = "Erro inesperado";
+        isTesting = false;
+      });
     }
   }
 
-  void _calculateAverages() {
-    final avgDownload = _downloadSpeeds.isNotEmpty
-        ? _downloadSpeeds.reduce((a, b) => a + b) / _downloadSpeeds.length
-        : 0;
-    final avgUpload = _uploadSpeeds.isNotEmpty
-        ? _uploadSpeeds.reduce((a, b) => a + b) / _uploadSpeeds.length
-        : 0;
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          'Média - Download: ${avgDownload.toStringAsFixed(2)} Mbps, '
-          'Upload: ${avgUpload.toStringAsFixed(2)} Mbps'),
-        duration: const Duration(seconds: 5),
+  Widget _buildMetricCard(String label, String value, IconData icon, Color color) {
+    return Expanded(
+      child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 8),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.blue.shade50,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 8)],
+        ),
+        child: Column(
+          children: [
+            Icon(icon, size: 32, color: color),
+            const SizedBox(height: 8),
+            Text(
+              value,
+              style: GoogleFonts.poppins(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
+            Text(
+              label,
+              style: GoogleFonts.poppins(fontSize: 14, color: Colors.grey[600]),
+            ),
+          ],
+        ),
       ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    final download = _progressDownload * 10;
-    final upload = _progressUpload * 10;
-    final bool isMobile = MediaQuery.of(context).size.width < 600;
+    final isMobile = MediaQuery.of(context).size.width < 600;
 
     return Scaffold(
-      appBar: AppBar(
-        // title: const Text('Teste de Velocidade'),
-        centerTitle: true,
-      ),
+      backgroundColor: const Color.fromARGB(255, 8, 48, 109),
       body: SafeArea(
-        child: Column(
-          children: [
-            // Espaço flexível que empurra o conteúdo para baixo
-            Expanded(child: Container()),
-            
-            // Conteúdo principal alinhado no final
-            Padding(
-              padding: EdgeInsets.all(isMobile ? 16.sp : 24.sp),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  // Status do teste
-                  Container(
-                    padding: EdgeInsets.all(12.sp),
+        child: SingleChildScrollView(
+          padding: EdgeInsets.symmetric(horizontal: isMobile ? 16 : 80),
+          child: Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const SizedBox(height: 50),
+                const SizedBox(height: 12),
+                Text(
+                  status,
+                  style: GoogleFonts.poppins(
+                    fontSize: 16,
+                    color: Colors.white70,
+                  ),
+                ),
+                const SizedBox(height: 24),
+                GestureDetector(
+                  onTap: isTesting ? null : _startTest,
+                  child: Container(
+                    width: isMobile ? 200 : 280,
+                    height: isMobile ? 200 : 280,
                     decoration: BoxDecoration(
-                      color: _isTesting ? Colors.blue[50] : Colors.grey[100],
-                      borderRadius: BorderRadius.circular(8.sp),
-                    ),
-                    child: Column(
-                      children: [
-                        Text(
-                          _status,
-                          textAlign: TextAlign.center,
-                          style: GoogleFonts.poppins(
-                            fontSize: isMobile ? 16.sp : 18.sp,
-                            fontWeight: FontWeight.w500,
-                            color: _isTesting ? Colors.blue : Colors.grey[800],
-                          ),
-                        ),
-                        if (_isTesting) SizedBox(height: 8.sp),
-                        if (_isTesting)
-                          LinearProgressIndicator(
-                            valueColor: AlwaysStoppedAnimation<Color>(Colors.blue),
-                            backgroundColor: Colors.blue[100],
-                          ),
+                      shape: BoxShape.circle,
+                      gradient: LinearGradient(
+                        colors: [Colors.blueAccent, Colors.lightBlueAccent],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black26,
+                          blurRadius: 20,
+                          offset: Offset(0, 10),
+                        )
                       ],
                     ),
+                    child: Center(
+                      child: isTesting
+                          ? CircularProgressIndicator(
+                              valueColor: AlwaysStoppedAnimation(Colors.white),
+                              strokeWidth: 5,
+                            )
+                          : Text(
+                              'INICIAR',
+                              style: GoogleFonts.poppins(
+                                fontSize: 22,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                            ),
+                    ),
                   ),
-                  SizedBox(height: 20.sp),
-
-                  // Primeira linha com 2 cards
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
+                ),
+                const SizedBox(height: 32),
+                Row(
+                  children: [
+                    _buildMetricCard('Download', '${downloadSpeed.toStringAsFixed(2)} Mbps', Icons.download, Colors.blue),
+                    _buildMetricCard('Upload', '${uploadSpeed.toStringAsFixed(2)} Mbps', Icons.upload, Colors.green),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  children: [
+                    _buildMetricCard('Ping', '$ping ms', Icons.network_ping, Colors.orange),
+                    _buildMetricCard('Jitter', '$jitter ms', Icons.wifi_tethering, Colors.purple),
+                  ],
+                ),
+                const SizedBox(height: 24),
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.blue.shade100,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Column(
                     children: [
-                      _buildSpeedCard(
-                        icon: Icons.download,
-                        title: "Download",
-                        value: download,
-                        unit: "Mbps",
-                        isMobile: isMobile,
-                        color: Colors.blue,
-                      ),
-                      SizedBox(width: 16.sp),
-                      _buildSpeedCard(
-                        icon: Icons.upload,
-                        title: "Upload",
-                        value: upload,
-                        unit: "Mbps",
-                        isMobile: isMobile,
-                        color: Colors.green,
-                      ),
-                    ],
-                  ),
-                  SizedBox(height: 16.sp),
-
-                  // Segunda linha com 2 cards
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      _buildSpeedCard(
-                        icon: Icons.network_check,
-                        title: "Ping",
-                        value: _ping.toDouble(),
-                        unit: "ms",
-                        isMobile: isMobile,
-                        color: Colors.orange,
-                      ),
-                      SizedBox(width: 16.sp),
-                      _buildSpeedCard(
-                        icon: Icons.signal_cellular_alt,
-                        title: "Jitter",
-                        value: _jitter.toDouble(),
-                        unit: "ms",
-                        isMobile: isMobile,
-                        color: Colors.purple,
-                      ),
-                    ],
-                  ),
-                  SizedBox(height: 20.sp),
-
-                  // Informações da rede
-                  _buildNetworkInfoCard(isMobile),
-                  SizedBox(height: 20.sp),
-
-                  // Botão de ação
-                  Center(
-                    child: ElevatedButton.icon(
-                      onPressed: _isTesting ? null : _startSpeedTest,
-                      icon: Icon(
-                        _isTesting ? Icons.refresh : Icons.speed,
-                        size: isMobile ? 20.sp : 24.sp,
-                      ),
-                      label: Text(
-                        _isTesting ? 'TESTE EM ANDAMENTO' : 'INICIAR TESTE',
+                      Text(
+                        "Informações da Rede",
                         style: GoogleFonts.poppins(
-                          fontSize: isMobile ? 16.sp : 18.sp,
+                          fontSize: 16,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                      style: ElevatedButton.styleFrom(
-                        padding: EdgeInsets.symmetric(
-                          horizontal: isMobile ? 24.sp : 32.sp,
-                          vertical: isMobile ? 12.sp : 16.sp,
-                        ),
-                        backgroundColor: _isTesting ? Colors.grey : Colors.blue,
-                        foregroundColor: Colors.white,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSpeedCard({
-    required IconData icon,
-    required String title,
-    required double value,
-    required String unit,
-    required bool isMobile,
-    required Color color,
-  }) {
-    return Container(
-      width: isMobile ? 150.sp : 180.sp,
-      child: Card(
-        elevation: 4,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12.sp),
-        ),
-        child: Padding(
-          padding: EdgeInsets.all(16.sp),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                icon,
-                size: isMobile ? 32.sp : 40.sp,
-                color: color,
-              ),
-              SizedBox(height: 12.sp),
-              Text(
-                title,
-                style: GoogleFonts.poppins(
-                  fontSize: isMobile ? 14.sp : 16.sp,
-                  fontWeight: FontWeight.w500,
-                  color: Colors.grey[700],
-                ),
-              ),
-              SizedBox(height: 8.sp),
-              Text(
-                "${value.toStringAsFixed(2)}",
-                style: GoogleFonts.poppins(
-                  fontSize: isMobile ? 20.sp : 24.sp,
-                  fontWeight: FontWeight.bold,
-                  color: color,
-                ),
-              ),
-              SizedBox(height: 4.sp),
-              Text(
-                unit,
-                style: GoogleFonts.poppins(
-                  fontSize: isMobile ? 14.sp : 16.sp,
-                  color: Colors.grey[600],
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildNetworkInfoCard(bool isMobile) {
-    return Card(
-      elevation: 2,
-      child: Padding(
-        padding: EdgeInsets.all(16.sp),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Icon(Icons.public, size: 20.sp, color: Colors.blue),
-                SizedBox(width: 8.sp),
-                Text(
-                  "Informações da Rede",
-                  style: GoogleFonts.poppins(
-                    fontSize: isMobile ? 16.sp : 18.sp,
-                    fontWeight: FontWeight.bold,
+                      const SizedBox(height: 8),
+                      Text("Provedor: ${isp ?? 'Carregando...'}",
+                          style: GoogleFonts.poppins()),
+                      Text("Localização: ${location ?? 'Carregando...'}",
+                          style: GoogleFonts.poppins()),
+                    ],
                   ),
                 ),
+                const SizedBox(height: 24),
               ],
             ),
-            SizedBox(height: 12.sp),
-            _buildInfoRow("Provedor:", _isp ?? "Carregando...", isMobile: isMobile),
-            SizedBox(height: 8.sp),
-            _buildInfoRow("Localização:", _location ?? "Carregando...", isMobile: isMobile),
-          ],
+          ),
         ),
       ),
-    );
-  }
-
-  Widget _buildInfoRow(String label, String value, {required bool isMobile}) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: GoogleFonts.poppins(
-            fontSize: isMobile ? 14.sp : 16.sp,
-            fontWeight: FontWeight.w500,
-            color: Colors.grey[700],
-          ),
-        ),
-        SizedBox(height: 4.sp),
-        Text(
-          value,
-          style: GoogleFonts.poppins(
-            fontSize: isMobile ? 14.sp : 16.sp,
-          ),
-        ),
-      ],
     );
   }
 }

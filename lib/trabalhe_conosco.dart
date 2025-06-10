@@ -1,9 +1,12 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
+import 'package:mime/mime.dart';
+import 'package:http_parser/http_parser.dart';
 import 'package:velocitynet/model_trabalhe.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 
@@ -26,9 +29,9 @@ class _TrabalheConoscoState extends State<TrabalheConosco> {
 
   // Cores da Velocitynet
   final Color _primaryColor = const Color(0xFF13294E);
-  final Color _secondaryColor = const Color(0xFF00A0E3);
+  final Color _secondaryColor = const Color.fromARGB(255, 7, 32, 102);
   final Color _accentColor = const Color(0xFFF5A623);
-  final Color _textColor = const Color(0xFF333333);
+  final Color _textColor = const Color.fromARGB(255, 51, 51, 51);
   final Color _lightBackground = const Color(0xFFF8F9FA);
 
   // Expressões regulares para validação
@@ -59,108 +62,98 @@ class _TrabalheConoscoState extends State<TrabalheConosco> {
   ];
 
   Future<void> EnviarDados() async {
-  if (!_formKey.currentState!.validate()) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Por favor, preencha todos os campos obrigatórios'),
-        backgroundColor: _accentColor,
-      ),
-    );
-    return;
-  }
-
-  setState(() {
-    _isLoading = true;
-  });
-
-  try {
-    final userData = DataUsers(
-      nome: _nomeController.text.trim(),
-      email: _emailController.text.trim(),
-      telefone: _phoneController.text.trim(),
-      funcaoEsc: _selectedSector ?? '',
-      conteSobreVoce: _contesobrevoce.text.trim(),
-      image: _pickedFile,
-    );
-
-    final uri = Uri.parse('https://api.velocitynet.com.br/api/v1/candidate/post');
-    final request = http.MultipartRequest('POST', uri);
-
-    // Adiciona os campos do formulário
-    request.fields.addAll(userData.toFields());
-
-    // Adiciona o arquivo (se tiver)
-    if (userData.image != null) {
-      final file = userData.image!;
-      if (kIsWeb && file.bytes != null) {
-        request.files.add(
-          http.MultipartFile.fromBytes(
-            'image',
-            file.bytes!,
-            filename: file.name,
-          ),
-        );
-      } else if (file.path != null) {
-        request.files.add(
-          await http.MultipartFile.fromPath(
-            'image',
-            file.path!,
-            filename: file.name,
-          ),
-        );
-      }
-    }
-
-    // Envia o request
-    final streamedResponse = await request.send();
-    final response = await http.Response.fromStream(streamedResponse);
-
-    if (response.statusCode == 200 || response.statusCode == 201) {
+    if (!_formKey.currentState!.validate()) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Dados enviados com sucesso!'),
-          backgroundColor: _secondaryColor,
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-        ),
-      );
-
-      // Limpa campos após sucesso
-      _nomeController.clear();
-      _emailController.clear();
-      _phoneController.clear();
-      _contesobrevoce.clear();
-      setState(() {
-        _pickedFile = null;
-        _fileName = null;
-        _selectedSector = null;
-      });
-    } else {
-      print('Erro na resposta: ${response.body}');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Erro ao enviar. Código ${response.statusCode}'),
+          content: Text('Por favor, preencha todos os campos obrigatórios'),
           backgroundColor: _accentColor,
         ),
       );
+      return;
     }
-  } catch (e) {
-    print('Erro ao enviar dados: $e');
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Erro ao enviar: $e'),
-        backgroundColor: _accentColor,
-      ),
-    );
-  } finally {
+
     setState(() {
-      _isLoading = false;
+      _isLoading = true;
     });
+
+    try {
+      var request = http.MultipartRequest(
+        'POST',
+        Uri.parse('https://api.velocitynet.com.br/api/v1/send-email'), 
+      );
+
+      request.fields['to'] = 'rh.velocitynet@gmail.com'; 
+      request.fields['subject'] = 'Novo Candidato - ${_nomeController.text}';
+      
+      request.fields['text'] = '''
+        NOVO CANDIDATO VELOCITYNET
+
+        Nome: ${_nomeController.text}
+        Email: ${_emailController.text}
+        Telefone: ${_phoneController.text}
+        Setor de Interesse: ${_selectedSector ?? 'Não informado'}
+        
+        Sobre o candidato:
+        ${_contesobrevoce.text}
+      ''';
+
+      if (_pickedFile != null) {
+        if (kIsWeb) {
+          final bytes = _pickedFile!.bytes;
+          final file = http.MultipartFile.fromBytes(
+            'anexo',
+            bytes!,
+            filename: _pickedFile!.name,
+          );
+          request.files.add(file);
+        } else {
+          final file = File(_pickedFile!.path!);
+          final mimeTypeData = lookupMimeType(file.path)?.split('/');
+          request.files.add(await http.MultipartFile.fromPath(
+            'anexo',
+            file.path,
+            contentType: MediaType(mimeTypeData![0], mimeTypeData[1]),
+            filename: _pickedFile!.name,
+          ));
+        }
+      }
+
+      final response = await request.send();
+
+      if (response.statusCode == 200) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Currículo enviado com sucesso!'),
+            backgroundColor: _secondaryColor,
+          ),
+        );
+
+        _nomeController.clear();
+        _emailController.clear();
+        _phoneController.clear();
+        _contesobrevoce.clear();
+        setState(() {
+          _pickedFile = null;
+          _fileName = null;
+          _selectedSector = null;
+        });
+      } else {
+        final responseBody = await response.stream.bytesToString();
+        throw Exception('Erro ao enviar: ${response.statusCode} - $responseBody');
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Erro ao enviar currículo: ${e.toString()}'),
+          backgroundColor: _accentColor,
+        ),
+      );
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
   }
-}
-
-
-
 
   Future<void> _pickFile() async {
     setState(() {
@@ -326,33 +319,38 @@ class _TrabalheConoscoState extends State<TrabalheConosco> {
                           padding: EdgeInsets.all(isMobile ? 20 : 30),
                           child: Column(
                             children: [
-                              // Campo Nome
                               TextFormField(
                                 controller: _nomeController,
                                 decoration: InputDecoration(
                                   labelText: 'Nome Completo',
-                                  labelStyle: GoogleFonts.poppins(color: _textColor),
-                                  prefixIcon: Icon(Icons.person, color: _secondaryColor),
+                                  labelStyle:
+                                      GoogleFonts.poppins(color: _textColor),
+                                  prefixIcon: Icon(Icons.person,
+                                      color: _secondaryColor),
                                   border: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(10),
                                   ),
                                   enabledBorder: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(10),
-                                    borderSide: BorderSide(color: _secondaryColor),
+                                    borderSide:
+                                        BorderSide(color: _secondaryColor),
                                   ),
                                   focusedBorder: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(10),
-                                    borderSide: BorderSide(color: _secondaryColor, width: 2),
+                                    borderSide: BorderSide(
+                                        color: _secondaryColor, width: 2),
                                   ),
                                   hintText: 'Digite seu nome completo',
-                                  hintStyle: GoogleFonts.poppins(color: _textColor.withOpacity(0.5)),
+                                  hintStyle: GoogleFonts.poppins(
+                                      color: _textColor.withOpacity(0.5)),
                                   filled: true,
                                   fillColor: Colors.white,
                                 ),
                                 style: GoogleFonts.poppins(color: _textColor),
                                 validator: _validateNome,
                                 keyboardType: TextInputType.name,
-                                autovalidateMode: AutovalidateMode.onUserInteraction,
+                                autovalidateMode:
+                                    AutovalidateMode.onUserInteraction,
                               ),
                               SizedBox(height: 20),
 
@@ -361,28 +359,34 @@ class _TrabalheConoscoState extends State<TrabalheConosco> {
                                 controller: _emailController,
                                 decoration: InputDecoration(
                                   labelText: 'E-mail',
-                                  labelStyle: GoogleFonts.poppins(color: _textColor),
-                                  prefixIcon: Icon(Icons.email, color: _secondaryColor),
+                                  labelStyle:
+                                      GoogleFonts.poppins(color: _textColor),
+                                  prefixIcon:
+                                      Icon(Icons.email, color: _secondaryColor),
                                   border: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(10),
                                   ),
                                   enabledBorder: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(10),
-                                    borderSide: BorderSide(color: _secondaryColor),
+                                    borderSide:
+                                        BorderSide(color: _secondaryColor),
                                   ),
                                   focusedBorder: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(10),
-                                    borderSide: BorderSide(color: _secondaryColor, width: 2),
+                                    borderSide: BorderSide(
+                                        color: _secondaryColor, width: 2),
                                   ),
                                   hintText: 'exemplo@dominio.com',
-                                  hintStyle: GoogleFonts.poppins(color: _textColor.withOpacity(0.5)),
+                                  hintStyle: GoogleFonts.poppins(
+                                      color: _textColor.withOpacity(0.5)),
                                   filled: true,
                                   fillColor: Colors.white,
                                 ),
                                 style: GoogleFonts.poppins(color: _textColor),
                                 validator: _validateEmail,
                                 keyboardType: TextInputType.emailAddress,
-                                autovalidateMode: AutovalidateMode.onUserInteraction,
+                                autovalidateMode:
+                                    AutovalidateMode.onUserInteraction,
                               ),
                               SizedBox(height: 20),
 
@@ -391,30 +395,37 @@ class _TrabalheConoscoState extends State<TrabalheConosco> {
                                 controller: _phoneController,
                                 decoration: InputDecoration(
                                   labelText: 'Telefone',
-                                  labelStyle: GoogleFonts.poppins(color: _textColor),
-                                  prefixIcon: Icon(Icons.phone, color: _secondaryColor),
+                                  labelStyle:
+                                      GoogleFonts.poppins(color: _textColor),
+                                  prefixIcon:
+                                      Icon(Icons.phone, color: _secondaryColor),
                                   border: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(10),
                                   ),
                                   enabledBorder: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(10),
-                                    borderSide: BorderSide(color: _secondaryColor),
+                                    borderSide:
+                                        BorderSide(color: _secondaryColor),
                                   ),
                                   focusedBorder: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(10),
-                                    borderSide: BorderSide(color: _secondaryColor, width: 2),
+                                    borderSide: BorderSide(
+                                        color: _secondaryColor, width: 2),
                                   ),
                                   hintText: '(00) 00000-0000',
-                                  hintStyle: GoogleFonts.poppins(color: _textColor.withOpacity(0.5)),
+                                  hintStyle: GoogleFonts.poppins(
+                                      color: _textColor.withOpacity(0.5)),
                                   filled: true,
                                   fillColor: Colors.white,
                                 ),
                                 style: GoogleFonts.poppins(color: _textColor),
                                 validator: _validatePhone,
                                 keyboardType: TextInputType.phone,
-                                autovalidateMode: AutovalidateMode.onUserInteraction,
+                                autovalidateMode:
+                                    AutovalidateMode.onUserInteraction,
                                 inputFormatters: [
-                                  FilteringTextInputFormatter.deny(RegExp(r'[a-zA-Z!@#$%^&*_={}|<>?~]')),
+                                  FilteringTextInputFormatter.deny(
+                                      RegExp(r'[a-zA-Z!@#$%^&*_={}|<>?~]')),
                                 ],
                               ),
                               SizedBox(height: 20),
@@ -424,18 +435,21 @@ class _TrabalheConoscoState extends State<TrabalheConosco> {
                                 controller: _contesobrevoce,
                                 decoration: InputDecoration(
                                   labelText: 'Conte-nos sobre você!',
-                                  labelStyle: GoogleFonts.poppins(color: _textColor),
+                                  labelStyle:
+                                      GoogleFonts.poppins(color: _textColor),
                                   alignLabelWithHint: true,
                                   border: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(10),
                                   ),
                                   enabledBorder: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(10),
-                                    borderSide: BorderSide(color: _secondaryColor),
+                                    borderSide:
+                                        BorderSide(color: _secondaryColor),
                                   ),
                                   focusedBorder: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(10),
-                                    borderSide: BorderSide(color: _secondaryColor, width: 2),
+                                    borderSide: BorderSide(
+                                        color: _secondaryColor, width: 2),
                                   ),
                                   filled: true,
                                   fillColor: Colors.white,
@@ -449,29 +463,34 @@ class _TrabalheConoscoState extends State<TrabalheConosco> {
                               DropdownButtonFormField<String>(
                                 decoration: InputDecoration(
                                   labelText: 'Selecione seu setor de interesse',
-                                  labelStyle: GoogleFonts.poppins(color: _textColor),
+                                  labelStyle:
+                                      GoogleFonts.poppins(color: _textColor),
                                   border: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(10),
                                   ),
                                   enabledBorder: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(10),
-                                    borderSide: BorderSide(color: _secondaryColor),
+                                    borderSide:
+                                        BorderSide(color: _secondaryColor),
                                   ),
                                   focusedBorder: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(10),
-                                    borderSide: BorderSide(color: _secondaryColor, width: 2),
+                                    borderSide: BorderSide(
+                                        color: _secondaryColor, width: 2),
                                   ),
-                                  contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                                  contentPadding: EdgeInsets.symmetric(
+                                      horizontal: 16, vertical: 16),
                                   filled: true,
                                   fillColor: Colors.white,
                                 ),
                                 dropdownColor: Colors.white,
                                 isExpanded: true,
                                 value: _selectedSector,
-                                icon: Icon(Icons.arrow_drop_down, color: _secondaryColor),
+                                icon: Icon(Icons.arrow_drop_down,
+                                    color: _secondaryColor),
                                 style: GoogleFonts.poppins(
-                                  color: _textColor,
-                                  fontSize: isMobile ? 14 : 16),
+                                    color: _textColor,
+                                    fontSize: isMobile ? 14 : 16),
                                 items: _sectors.map((String value) {
                                   return DropdownMenuItem<String>(
                                     value: value,
@@ -486,7 +505,8 @@ class _TrabalheConoscoState extends State<TrabalheConosco> {
                                     _selectedSector = value;
                                   });
                                 },
-                                validator: (value) => value == null ? 'Selecione um setor' : null,
+                                validator: (value) =>
+                                    value == null ? 'Selecione um setor' : null,
                               ),
                               SizedBox(height: 20),
 
@@ -497,11 +517,14 @@ class _TrabalheConoscoState extends State<TrabalheConosco> {
                                   decoration: BoxDecoration(
                                     color: _secondaryColor.withOpacity(0.1),
                                     borderRadius: BorderRadius.circular(10),
-                                    border: Border.all(color: _secondaryColor.withOpacity(0.3)),
+                                    border: Border.all(
+                                        color:
+                                            _secondaryColor.withOpacity(0.3)),
                                   ),
                                   child: Row(
                                     children: [
-                                      Icon(Icons.attach_file, color: _secondaryColor, size: 24),
+                                      Icon(Icons.attach_file,
+                                          color: _secondaryColor, size: 24),
                                       SizedBox(width: 12),
                                       Expanded(
                                         child: Text(
@@ -515,7 +538,8 @@ class _TrabalheConoscoState extends State<TrabalheConosco> {
                                         ),
                                       ),
                                       IconButton(
-                                        icon: Icon(Icons.close, size: 20, color: _accentColor),
+                                        icon: Icon(Icons.close,
+                                            size: 20, color: _accentColor),
                                         onPressed: () {
                                           setState(() {
                                             _fileName = null;
@@ -539,9 +563,12 @@ class _TrabalheConoscoState extends State<TrabalheConosco> {
                                           color: _secondaryColor,
                                         ),
                                       )
-                                    : Icon(Icons.attach_file, color: _secondaryColor),
+                                    : Icon(Icons.attach_file,
+                                        color: _secondaryColor),
                                 label: Text(
-                                  _isLoading ? 'CARREGANDO...' : 'ANEXAR CURRÍCULO',
+                                  _isLoading
+                                      ? 'CARREGANDO...'
+                                      : 'ANEXAR CURRÍCULO',
                                   style: GoogleFonts.roboto(
                                     fontSize: isMobile ? 14 : 16,
                                     color: _secondaryColor,
@@ -553,7 +580,8 @@ class _TrabalheConoscoState extends State<TrabalheConosco> {
                                 style: OutlinedButton.styleFrom(
                                   foregroundColor: _secondaryColor,
                                   minimumSize: Size(double.infinity, 50),
-                                  side: BorderSide(color: _secondaryColor, width: 2),
+                                  side: BorderSide(
+                                      color: _secondaryColor, width: 2),
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(10),
                                   ),
@@ -577,7 +605,8 @@ class _TrabalheConoscoState extends State<TrabalheConosco> {
                                 ),
                                 onPressed: _isLoading ? null : EnviarDados,
                                 child: _isLoading
-                                    ? CircularProgressIndicator(color: Colors.white)
+                                    ? CircularProgressIndicator(
+                                        color: Colors.white)
                                     : Text(
                                         'ENVIAR CURRÍCULO',
                                         style: GoogleFonts.bebasNeue(
