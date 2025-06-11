@@ -94,7 +94,7 @@ class _OletvState extends State<Oletv> {
   @override
   Widget build(BuildContext context) {
     final bool isMobile = MediaQuery.of(context).size.width < 600;
-    
+
     return Scaffold(
       body: SingleChildScrollView(
         child: Column(
@@ -115,7 +115,8 @@ class _OletvState extends State<Oletv> {
                   // Espaço adicional antes do texto
                   SizedBox(height: isMobile ? 80 : 150),
                   Padding(
-                    padding: EdgeInsets.symmetric(horizontal: isMobile ? 35 : 0),
+                    padding:
+                        EdgeInsets.symmetric(horizontal: isMobile ? 35 : 0),
                     child: Text(
                       'ASSISTA PELO APLICATIVO',
                       style: GoogleFonts.poppins(
@@ -156,7 +157,6 @@ class _OletvState extends State<Oletv> {
               ),
             ),
 
-
             Padding(
               padding: EdgeInsets.symmetric(
                 horizontal: isMobile ? 16 : 0,
@@ -190,7 +190,8 @@ class _OletvState extends State<Oletv> {
                       ),
                       tabs: [
                         Padding(
-                          padding: EdgeInsets.symmetric(vertical: isMobile ? 8 : 0),
+                          padding:
+                              EdgeInsets.symmetric(vertical: isMobile ? 8 : 0),
                           child: Text(
                             'Life Line',
                             style: GoogleFonts.poppins(
@@ -202,7 +203,8 @@ class _OletvState extends State<Oletv> {
                           ),
                         ),
                         Padding(
-                          padding: EdgeInsets.symmetric(vertical: isMobile ? 8 : 0),
+                          padding:
+                              EdgeInsets.symmetric(vertical: isMobile ? 8 : 0),
                           child: Text(
                             'Start HD',
                             style: GoogleFonts.poppins(
@@ -214,7 +216,8 @@ class _OletvState extends State<Oletv> {
                           ),
                         ),
                         Padding(
-                          padding: EdgeInsets.symmetric(vertical: isMobile ? 8 : 0),
+                          padding:
+                              EdgeInsets.symmetric(vertical: isMobile ? 8 : 0),
                           child: Text(
                             'Top HD',
                             style: GoogleFonts.poppins(
@@ -226,7 +229,8 @@ class _OletvState extends State<Oletv> {
                           ),
                         ),
                         Padding(
-                          padding: EdgeInsets.symmetric(vertical: isMobile ? 8 : 0),
+                          padding:
+                              EdgeInsets.symmetric(vertical: isMobile ? 8 : 0),
                           child: Text(
                             'Premium HD',
                             style: GoogleFonts.poppins(
@@ -280,10 +284,10 @@ class _OletvState extends State<Oletv> {
                     ),
                   ),
                   SizedBox(height: isMobile ? 40 : 100),
-                  Footer(),
                 ],
               ),
             ),
+            Footer(),
           ],
         ),
       ),
@@ -364,7 +368,9 @@ class _OletvState extends State<Oletv> {
             child: GridView.builder(
               itemBuilder: (context, index) {
                 return Container(
-                  padding: isMobile ? const EdgeInsets.all(8) : const EdgeInsets.all(20),
+                  padding: isMobile
+                      ? const EdgeInsets.all(8)
+                      : const EdgeInsets.all(20),
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(10),
