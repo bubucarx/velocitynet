@@ -29,7 +29,7 @@ class _TextHeader extends StatefulWidget {
 
 class __TextHeaderState extends State<_TextHeader> {
   double _fontSize = 23.0;
-  FontWeight _fontWeight = FontWeight.w300;
+  FontWeight _fontWeight = FontWeight.bold;
   double _containerWidth = 0.0;
 
   @override
@@ -64,7 +64,7 @@ class __TextHeaderState extends State<_TextHeader> {
                 style: GoogleFonts.poppins(
                   color: Colors.white,
                   fontSize: widget.isSelected ? 25.0.sp : _fontSize.sp,
-                  fontWeight: widget.isSelected ? FontWeight.w500 : _fontWeight,
+                  fontWeight: widget.isSelected ? FontWeight.w600 : FontWeight.w500,
                 ),
               ),
               AnimatedContainer(
@@ -74,7 +74,7 @@ class __TextHeaderState extends State<_TextHeader> {
                   borderRadius: BorderRadius.circular(10.r),
                 ),
                 curve: Curves.easeOut,
-                height: 3.h,
+                height: widget.isSelected ? 4.h : 0,
                 width: widget.isSelected ? widget.width.w : _containerWidth.w,
               ),
             ],
@@ -273,10 +273,9 @@ class Header extends StatelessWidget {
                         child: Text(
                           _getHeaderText(index),
                           textAlign: TextAlign.center,
-                          style: TextStyle(
+                          style: GoogleFonts.poppins(
                             color: Colors.white,
                             fontSize: 20.sp,
-                            fontFamily: 'PetrovSans',
                             fontWeight: Provider.of<IndexProvider>(context).selectedIndex == index
                                 ? FontWeight.w700
                                 : FontWeight.w400,
