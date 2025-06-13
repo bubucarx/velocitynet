@@ -68,7 +68,7 @@ class __TextHeaderState extends State<_TextHeader> {
                 ),
               ),
               AnimatedContainer(
-                duration: const Duration(milliseconds: 300),
+                duration: const Duration(milliseconds: 500),
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(10.r),
