@@ -144,7 +144,7 @@ class _TestspeednetState extends State<Testspeednet> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const SizedBox(height: 50),
+                const SizedBox(height: 80),
                 const SizedBox(height: 12),
                 Text(
                   status,

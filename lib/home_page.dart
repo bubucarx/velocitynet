@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_image_slideshow/flutter_image_slideshow.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
 import 'package:smooth_scroll_multiplatform/smooth_scroll_multiplatform.dart';
@@ -27,7 +28,8 @@ class HomePage extends StatefulWidget {
   State<HomePage> createState() => _HomePageState();
 }
 
-class _HomePageState extends State<HomePage> with AutomaticKeepAliveClientMixin {
+class _HomePageState extends State<HomePage>
+    with AutomaticKeepAliveClientMixin {
   @override
   bool get wantKeepAlive => true;
 
@@ -59,7 +61,7 @@ class _HomePageState extends State<HomePage> with AutomaticKeepAliveClientMixin 
                       children: [
                         // Conteúdo principal
                         MeuWidget(scroll: controller, phs: physics),
-                        
+
                         // AppBar fixa sem animações
                         Positioned(
                           top: 0,
@@ -125,17 +127,21 @@ class _MeuWidgetState extends State<MeuWidget> {
               physics: widget.phs,
               controller: widget.scroll,
               children: [
-                Container(
+                SizedBox(
                   width: double.infinity,
                   height: imageHeight,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF13294E),
-                    image: DecorationImage(
-                      image: isMobile
-                          ? AssetImage('lib/assets/images/velocitybranco.png')
-                          : AssetImage('lib/assets/images/ImagemPromocional.png'),
-                      fit: BoxFit.cover,
-                    ),
+                  child: ImageSlideshow(children: isMobile
+                  ?[
+                    Image.asset('lib/assets/images/velocitybranco.png', fit: BoxFit.cover,),
+                    
+                  ]
+                  :[
+                    Image.asset('lib/assets/images/ImagemPromocional.png', fit: BoxFit.cover,),
+                  ],
+                  autoPlayInterval: 10000,
+                  indicatorColor: Colors.blue,
+                  isLoop: true,
+                  indicatorBackgroundColor: Colors.grey,
                   ),
                 ),
                 MonteSeuCombo(),
