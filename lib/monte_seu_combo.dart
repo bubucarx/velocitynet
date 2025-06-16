@@ -727,7 +727,7 @@ class _MonteSeuComboState extends State<MonteSeuCombo> {
                 fontSize: 12.sp,
                 fontFamily: 'EutoStile',
                 fontWeight: FontWeight.w700,
-              ),
+              ),    
             ),
 
           SizedBox(height: isMobile ? 10.sp : 10.sp),
