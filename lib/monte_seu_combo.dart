@@ -727,7 +727,7 @@ class _MonteSeuComboState extends State<MonteSeuCombo> {
                 fontSize: 12.sp,
                 fontFamily: 'EutoStile',
                 fontWeight: FontWeight.w700,
-              ),    
+              ),
             ),
 
           SizedBox(height: isMobile ? 10.sp : 10.sp),
@@ -959,8 +959,7 @@ class _MonteSeuComboState extends State<MonteSeuCombo> {
                   '• Conexão estável e simétrica\n'
                   '• Download e Upload na mesma velocidade\n'
                   '• Sem limite de franquia\n'
-                  '• Suporte técnico 24/7\n'
-                  '• Instalação gratuita',
+                  '• Suporte técnico 24/7\n',
                   style: GoogleFonts.poppins(
                     fontSize: isMobile ? 14.sp : 16.sp,
                     color: Colors.black87,
