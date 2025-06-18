@@ -155,89 +155,115 @@ class Header extends StatelessWidget {
   }
 
   Widget _buildDesktopHeader(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-      children: [
-        SvgPicture.asset(
-          "lib/assets/images/LOGOVETORIZADA.svg",
-          fit: BoxFit.cover,
-          width: 254.w,
-          height: 50.h,
-        ),
-        Container(
-          height: 120,
-          child: Row(
-            children: List.generate(6, (index) {
-              return Padding(
-                padding: EdgeInsets.symmetric(horizontal: 15.w),
-                child: _TextHeader(
-                  text: _getHeaderText(index),
-                  width: _getHeaderWidth(index),
-                  index: index,
-                  isSelected:
-                      Provider.of<IndexProvider>(context).selectedIndex ==
-                          index,
-                  onTap: () {
-                    Provider.of<IndexProvider>(context, listen: false)
-                        .setSelectedIndex(index);
-                  },
-                ),
-              );
-            }),
-          ),
-        ),
-        InkWell(
-          onTap: () {
-            launch(
-                "https://sistema.velocitynet.com.br/central_assinante_web/login");
-          },
-          child: Container(
-            width: 290.w,
-            height: 35.h,
-            decoration: ShapeDecoration(
-              color: Colors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(5.r),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final shouldHideClientCenter = constraints.maxWidth <= 1320;
+
+        return Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            SvgPicture.asset(
+              "lib/assets/images/LOGOVETORIZADA.svg",
+              fit: BoxFit.cover,
+              width: 254.w,
+              height: 50.h,
+            ),
+            Container(
+              height: 120,
+              child: Row(
+                children: List.generate(6, (index) {
+                  return Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 15.w),
+                    child: _TextHeader(
+                      text: _getHeaderText(index),
+                      width: _getHeaderWidth(index),
+                      index: index,
+                      isSelected:
+                          Provider.of<IndexProvider>(context).selectedIndex ==
+                              index,
+                      onTap: () {
+                        Provider.of<IndexProvider>(context, listen: false)
+                            .setSelectedIndex(index);
+                      },
+                    ),
+                  );
+                }),
               ),
             ),
-            child: Center(
-              child: Text(
-                'CENTRAL DO CLIENTE',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: const Color(0xFF13294E),
-                  fontSize: 18.sp,
-                  fontFamily: 'PetrovSans',
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ),
-          ),
-        ),
-      ],
+            // CENTRAL DO CLIENTE ou ÍCONE
+            shouldHideClientCenter
+                ? IconButton(
+                    icon: Icon(Icons.person_outline,
+                        size: 40.sp, color: Colors.white),
+                    onPressed: () {
+                      launch(
+                          "https://sistema.velocitynet.com.br/central_assinante_web/login");
+                    },
+                  )
+                : InkWell(
+                    onTap: () {
+                      launch(
+                          "https://sistema.velocitynet.com.br/central_assinante_web/login");
+                    },
+                    child: Container(
+                      width: 290.w,
+                      height: 35.h,
+                      decoration: ShapeDecoration(
+                        color: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(5.r),
+                        ),
+                      ),
+                      child: Center(
+                        child: Text(
+                          'CENTRAL DO CLIENTE',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: const Color(0xFF13294E),
+                            fontSize: 18.sp,
+                            fontFamily: 'PetrovSans',
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+          ],
+        );
+      },
     );
   }
 
   Widget _buildMobileHeader(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Padding(
-          padding: EdgeInsets.only(left: 20.w),
-          child: SvgPicture.asset(
-            "lib/assets/images/LOGOVETORIZADA.svg",
-            fit: BoxFit.cover,
-            width: 150.w,
-            height: 30.h,
+    return Container(
+      width: double.infinity,
+      height: 70.h,
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          // Logo à esquerda
+          Positioned(
+            left: 20.w,
+            child: SvgPicture.asset(
+              "lib/assets/images/LOGOVETORIZADA.svg",
+              width: 150.w,
+              height: 30.h,
+              fit: BoxFit.contain,
+            ),
           ),
-        ),
-        IconButton(
-          icon: Icon(Icons.menu, color: Colors.white, size: 30.sp),
-          onPressed: () {
-            _showCenteredMobileMenu(context);
-          },
-        ),
-      ],
+
+          // Botão à direita
+          Positioned(
+            right: 20.w,
+            child: IconButton(
+              icon: Icon(Icons.menu, size: 30.sp, color: Colors.white),
+              padding: EdgeInsets.zero,
+              constraints: BoxConstraints(),
+              onPressed: () => _showCenteredMobileMenu(context),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -248,10 +274,13 @@ class Header extends StatelessWidget {
       builder: (context) {
         return Dialog(
           backgroundColor: Colors.transparent,
-          insetPadding: EdgeInsets.all(20.w),
+          insetPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 24.h),
           child: Container(
             width: double.infinity,
-            constraints: BoxConstraints(maxWidth: 400.w),
+            constraints: BoxConstraints(
+              maxWidth: 380.w,
+              maxHeight: 0.9.sh, // Responsivo verticalmente
+            ),
             decoration: BoxDecoration(
               color: const Color(0xFF13294E),
               borderRadius: BorderRadius.circular(20.r),
@@ -264,68 +293,71 @@ class Header extends StatelessWidget {
                 ),
               ],
             ),
-            padding: EdgeInsets.symmetric(vertical: 30.h, horizontal: 20.w),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                ...List.generate(6, (index) {
-                  return Padding(
-                    padding: EdgeInsets.symmetric(vertical: 8.h),
+            padding: EdgeInsets.symmetric(vertical: 20.h, horizontal: 16.w),
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  ...List.generate(6, (index) {
+                    return Padding(
+                      padding: EdgeInsets.symmetric(vertical: 6.h),
+                      child: InkWell(
+                        onTap: () {
+                          Provider.of<IndexProvider>(context, listen: false)
+                              .setSelectedIndex(index);
+                          Navigator.pop(context);
+                        },
+                        child: Container(
+                          width: double.infinity,
+                          padding: EdgeInsets.symmetric(vertical: 10.h),
+                          child: Text(
+                            _getHeaderText(index),
+                            textAlign: TextAlign.center,
+                            style: GoogleFonts.poppins(
+                              color: Colors.white,
+                              fontSize: 16.sp,
+                              fontWeight: Provider.of<IndexProvider>(context)
+                                          .selectedIndex ==
+                                      index
+                                  ? FontWeight.w700
+                                  : FontWeight.w400,
+                            ),
+                          ),
+                        ),
+                      ),
+                    );
+                  }),
+                  Padding(
+                    padding: EdgeInsets.only(top: 16.h),
                     child: InkWell(
                       onTap: () {
-                        Provider.of<IndexProvider>(context, listen: false)
-                            .setSelectedIndex(index);
                         Navigator.pop(context);
+                        launch(
+                          "https://sistema.velocitynet.com.br/central_assinante_web/login",
+                        );
                       },
                       child: Container(
                         width: double.infinity,
                         padding: EdgeInsets.symmetric(vertical: 12.h),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(8.r),
+                        ),
                         child: Text(
-                          _getHeaderText(index),
+                          'CENTRAL DO CLIENTE',
                           textAlign: TextAlign.center,
-                          style: GoogleFonts.poppins(
-                            color: Colors.white,
-                            fontSize: 20.sp,
-                            fontWeight: Provider.of<IndexProvider>(context)
-                                        .selectedIndex ==
-                                    index
-                                ? FontWeight.w700
-                                : FontWeight.w400,
+                          style: TextStyle(
+                            color: const Color(0xFF13294E),
+                            fontSize: 16.sp,
+                            fontFamily: 'PetrovSans',
+                            fontWeight: FontWeight.w700,
                           ),
                         ),
                       ),
                     ),
-                  );
-                }),
-                Padding(
-                  padding: EdgeInsets.only(top: 20.h),
-                  child: InkWell(
-                    onTap: () {
-                      Navigator.pop(context);
-                      launch(
-                          "https://sistema.velocitynet.com.br/central_assinante_web/login");
-                    },
-                    child: Container(
-                      width: double.infinity,
-                      padding: EdgeInsets.symmetric(vertical: 12.h),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(8.r),
-                      ),
-                      child: Text(
-                        'CENTRAL DO CLIENTE',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          color: const Color(0xFF13294E),
-                          fontSize: 18.sp,
-                          fontFamily: 'PetrovSans',
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         );
