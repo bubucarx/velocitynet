@@ -29,15 +29,24 @@ class _TextHeader extends StatefulWidget {
 
 class __TextHeaderState extends State<_TextHeader> {
   double _fontSize = 23.0;
-  FontWeight _fontWeight = FontWeight.bold;
+  FontWeight _fontWeight = FontWeight.w500;
   double _containerWidth = 0.0;
 
   @override
   Widget build(BuildContext context) {
+    // Resetar visual se não estiver selecionado
+    if (!widget.isSelected &&
+        (_fontSize != 23.0 || _fontWeight != FontWeight.w500)) {
+      _fontSize = 23.0;
+      _fontWeight = FontWeight.w500;
+      _containerWidth = 0.0;
+    }
+
     return MouseRegion(
       onEnter: (_) {
         if (!widget.isSelected) {
           setState(() {
+            _fontSize = 24.5;
             _fontWeight = FontWeight.w700;
             _containerWidth = widget.width;
           });
@@ -46,7 +55,8 @@ class __TextHeaderState extends State<_TextHeader> {
       onExit: (_) {
         if (!widget.isSelected) {
           setState(() {
-            _fontWeight = FontWeight.w200;
+            _fontSize = 23.0;
+            _fontWeight = FontWeight.w500;
             _containerWidth = 0.0;
           });
         }
@@ -58,24 +68,27 @@ class __TextHeaderState extends State<_TextHeader> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Text(
-                widget.text,
-                textAlign: TextAlign.center,
+              AnimatedDefaultTextStyle(
+                duration: const Duration(milliseconds: 300),
                 style: GoogleFonts.poppins(
                   color: Colors.white,
                   fontSize: widget.isSelected ? 25.0.sp : _fontSize.sp,
-                  fontWeight: widget.isSelected ? FontWeight.w600 : FontWeight.w500,
+                  fontWeight: widget.isSelected ? FontWeight.w600 : _fontWeight,
+                ),
+                child: Text(
+                  widget.text,
+                  textAlign: TextAlign.center,
                 ),
               ),
               AnimatedContainer(
                 duration: const Duration(milliseconds: 500),
+                curve: Curves.easeOut,
+                height: widget.isSelected ? 4.h : 0,
+                width: widget.isSelected ? widget.width.w : _containerWidth.w,
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(10.r),
                 ),
-                curve: Curves.easeOut,
-                height: widget.isSelected ? 4.h : 0,
-                width: widget.isSelected ? widget.width.w : _containerWidth.w,
               ),
             ],
           ),
@@ -94,7 +107,8 @@ class Header extends StatelessWidget {
     return LayoutBuilder(
       builder: (context, constraints) {
         final isMobile = constraints.maxWidth < 1200;
-        final designSize = isMobile ? const Size(400, 860) : const Size(1920, 1080);
+        final designSize =
+            isMobile ? const Size(400, 860) : const Size(1920, 1080);
 
         return ScreenUtilInit(
           designSize: designSize,
@@ -113,7 +127,6 @@ class Header extends StatelessWidget {
                       ),
                     ),
                   ),
-
                 Padding(
                   padding: const EdgeInsets.only(left: 40, right: 40, top: 15),
                   child: Container(
@@ -151,7 +164,6 @@ class Header extends StatelessWidget {
           width: 254.w,
           height: 50.h,
         ),
-
         Container(
           height: 120,
           child: Row(
@@ -162,7 +174,9 @@ class Header extends StatelessWidget {
                   text: _getHeaderText(index),
                   width: _getHeaderWidth(index),
                   index: index,
-                  isSelected: Provider.of<IndexProvider>(context).selectedIndex == index,
+                  isSelected:
+                      Provider.of<IndexProvider>(context).selectedIndex ==
+                          index,
                   onTap: () {
                     Provider.of<IndexProvider>(context, listen: false)
                         .setSelectedIndex(index);
@@ -172,10 +186,10 @@ class Header extends StatelessWidget {
             }),
           ),
         ),
-
         InkWell(
           onTap: () {
-            launch("https://sistema.velocitynet.com.br/central_assinante_web/login");
+            launch(
+                "https://sistema.velocitynet.com.br/central_assinante_web/login");
           },
           child: Container(
             width: 290.w,
@@ -217,7 +231,6 @@ class Header extends StatelessWidget {
             height: 30.h,
           ),
         ),
-
         IconButton(
           icon: Icon(Icons.menu, color: Colors.white, size: 30.sp),
           onPressed: () {
@@ -231,16 +244,14 @@ class Header extends StatelessWidget {
   void _showCenteredMobileMenu(BuildContext context) {
     showDialog(
       context: context,
-      barrierColor: Colors.black54, // Fundo semi-transparente
+      barrierColor: Colors.black54,
       builder: (context) {
         return Dialog(
           backgroundColor: Colors.transparent,
           insetPadding: EdgeInsets.all(20.w),
           child: Container(
             width: double.infinity,
-            constraints: BoxConstraints(
-              maxWidth: 400.w, // Largura máxima do menu
-            ),
+            constraints: BoxConstraints(maxWidth: 400.w),
             decoration: BoxDecoration(
               color: const Color(0xFF13294E),
               borderRadius: BorderRadius.circular(20.r),
@@ -257,7 +268,6 @@ class Header extends StatelessWidget {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                // Itens do menu
                 ...List.generate(6, (index) {
                   return Padding(
                     padding: EdgeInsets.symmetric(vertical: 8.h),
@@ -276,7 +286,9 @@ class Header extends StatelessWidget {
                           style: GoogleFonts.poppins(
                             color: Colors.white,
                             fontSize: 20.sp,
-                            fontWeight: Provider.of<IndexProvider>(context).selectedIndex == index
+                            fontWeight: Provider.of<IndexProvider>(context)
+                                        .selectedIndex ==
+                                    index
                                 ? FontWeight.w700
                                 : FontWeight.w400,
                           ),
@@ -285,14 +297,13 @@ class Header extends StatelessWidget {
                     ),
                   );
                 }),
-                
-                // Botão Central do Cliente
                 Padding(
                   padding: EdgeInsets.only(top: 20.h),
                   child: InkWell(
                     onTap: () {
                       Navigator.pop(context);
-                      // Adicione aqui a ação para a Central do Cliente
+                      launch(
+                          "https://sistema.velocitynet.com.br/central_assinante_web/login");
                     },
                     child: Container(
                       width: double.infinity,
@@ -334,13 +345,6 @@ class Header extends StatelessWidget {
   }
 
   double _getHeaderWidth(int index) {
-    return [
-      80,
-      130,
-      80,
-      150,
-      150,
-      150
-    ][index].toDouble();
+    return [80, 130, 80, 150, 150, 150][index].toDouble();
   }
 }

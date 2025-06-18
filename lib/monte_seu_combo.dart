@@ -37,7 +37,7 @@ class _MonteSeuComboState extends State<MonteSeuCombo> {
 
   final List<int> appValues = [40, 50, 39, 20, 19];
   final List<String> megaValues = ['500', '700', '800', '900', '1000'];
-  final List<int> megaPrices = [99, 109, 129, 149, 169];
+  final List<int> megaPrices = [109, 119, 139, 164, 189];
 
   @override
   Widget build(BuildContext context) {
@@ -727,7 +727,7 @@ class _MonteSeuComboState extends State<MonteSeuCombo> {
                 fontSize: 12.sp,
                 fontFamily: 'EutoStile',
                 fontWeight: FontWeight.w700,
-              ),    
+              ),
             ),
 
           SizedBox(height: isMobile ? 10.sp : 10.sp),
@@ -959,8 +959,7 @@ class _MonteSeuComboState extends State<MonteSeuCombo> {
                   '• Conexão estável e simétrica\n'
                   '• Download e Upload na mesma velocidade\n'
                   '• Sem limite de franquia\n'
-                  '• Suporte técnico 24/7\n'
-                  '• Instalação gratuita',
+                  '• Suporte técnico 24/7\n',
                   style: GoogleFonts.poppins(
                     fontSize: isMobile ? 14.sp : 16.sp,
                     color: Colors.black87,

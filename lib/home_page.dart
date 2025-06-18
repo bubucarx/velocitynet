@@ -19,6 +19,7 @@ import 'package:velocitynet/premiere.dart';
 import 'package:velocitynet/providerIndex.dart';
 import 'package:velocitynet/telecine.dart';
 import 'package:velocitynet/testSpeednet.dart';
+import 'package:velocitynet/testedevelocidade.dart';
 import 'package:velocitynet/trabalhe_conosco.dart';
 
 class HomePage extends StatefulWidget {
@@ -93,6 +94,25 @@ class MeuWidget extends StatefulWidget {
 }
 
 class _MeuWidgetState extends State<MeuWidget> {
+  int? _lastIndex;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final selectedIndex = Provider.of<IndexProvider>(context).selectedIndex;
+
+    // Se mudou de aba, volta para o topo
+    if (_lastIndex != null && _lastIndex != selectedIndex) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (widget.scroll.hasClients) {
+          widget.scroll.jumpTo(0); // Ou animateTo se quiser animação
+        }
+      });
+    }
+
+    _lastIndex = selectedIndex;
+  }
+
   @override
   Widget build(BuildContext context) {
     int selectedIndex = Provider.of<IndexProvider>(context).selectedIndex;
@@ -130,18 +150,24 @@ class _MeuWidgetState extends State<MeuWidget> {
                 SizedBox(
                   width: double.infinity,
                   height: imageHeight,
-                  child: ImageSlideshow(children: isMobile
-                  ?[
-                    Image.asset('lib/assets/images/velocitybranco.png', fit: BoxFit.cover,),
-                    
-                  ]
-                  :[
-                    Image.asset('lib/assets/images/ImagemPromocional.png', fit: BoxFit.cover,),
-                  ],
-                  autoPlayInterval: 10000,
-                  indicatorColor: Colors.blue,
-                  isLoop: true,
-                  indicatorBackgroundColor: Colors.grey,
+                  child: ImageSlideshow(
+                    children: isMobile
+                        ? [
+                            Image.asset(
+                              'lib/assets/images/velocitybranco.png',
+                              fit: BoxFit.cover,
+                            ),
+                          ]
+                        : [
+                            Image.asset(
+                              'lib/assets/images/ImagemPromocional.png',
+                              fit: BoxFit.cover,
+                            ),
+                          ],
+                    autoPlayInterval: 10000,
+                    indicatorColor: Colors.blue,
+                    isLoop: true,
+                    indicatorBackgroundColor: Colors.grey,
                   ),
                 ),
                 MonteSeuCombo(),
@@ -158,7 +184,7 @@ class _MeuWidgetState extends State<MeuWidget> {
           case 4:
             return TrabalheConosco();
           case 5:
-            return Testspeednet();
+            return TesteDeVelocidade();
           default:
             return const Center(child: Text("Nenhum item selecionado"));
         }
